@@ -98,6 +98,9 @@ pub trait Agent{
 
 }
 
+mod lib;
+use lib::serve;
+
 fn main() {
 	println!("Kek!");
 
@@ -117,6 +120,7 @@ fn main() {
 		EnvResult::Some(state) => println!("state: {:?}", state),
 		EnvResult::Done => println!("DONE!"),
 	}
-	// println!("fg: {:?}", state)
+	let served = serve();
+	println!("fg: {:?}", served)
 
 }
