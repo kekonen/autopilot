@@ -1,0 +1,8 @@
+[package]
+name = "autopilot"
+version = "0.1.0"
+authors = ["kekonen <daniil.naumetc@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+pid_control = { path = "deps/pid_control-rs"}
