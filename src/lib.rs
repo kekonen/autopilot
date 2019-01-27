@@ -52,13 +52,7 @@ impl Server{
 
     pub fn send(&self, message: &str, address: &SocketAddr) -> std::io::Result<()> {
         {
-            // let buf = &mut to_send[..amt];
-            // buf.reverse();
-            // let addr = SocketAddr::from(([127, 0, 0, 1], *port));
-            // println!("addr1: {:?}", addr);
-
             self.socket.send_to(message.as_bytes(), address)?;
-            // println!("r1: {:?}---{:?}", result, to_send.as_bytes());
         }
         Ok(())
     }
@@ -124,8 +118,6 @@ impl FromStr for State {
         .map(|x| x.parse().unwrap())
         .collect();
 
-        // println!("message:{:?}, s:{:?}", message, s);
-        // debug!("--> message: {m}, split: {s}", m=message, s=split);
         Ok(State {
             pitch: s[0],
             roll: s[1],
@@ -153,14 +145,9 @@ impl FromStr for State {
             vry: s[23],
             vrz: s[24]
         })
-
-        // Ok(Point { x: x_fromstr, y: y_fromstr })
     }
 } 
 
-// impl<T> Clone for State<T> {
-//     fn clone(&self) -> State<T> { *self }
-// }
 
 #[derive(Debug, Copy, Clone)]
 pub struct Action{
@@ -180,16 +167,10 @@ impl ToString for Action {
 }
 
 
-// impl<T> Clone for Action<T> {
-//     fn clone(&self) -> Action<T> { *self }
-// }
-
 
 pub trait Environment{
 	fn new() -> Self;
 	
-	// fn set_state(&mut self, state: State) -> bool;
-
     fn reset(&self) -> EnvResult<State>;
 
 	fn step(&mut self, action: Action) -> EnvResult<State>;
@@ -207,13 +188,10 @@ pub struct FlightGear{
 
 impl FlightGear{
     fn decode_state(&self, message: &str) -> State {
-        // println!(" m : {:?}", message.trim());
         let mut s: Vec<f32> = message.trim().split(';')
         .map(|x| x.parse().unwrap())
         .collect();
 
-        // println!("message:{:?}, s:{:?}", message, s);
-        // debug!("--> message: {m}, split: {s}", m=message, s=split);
         State {
             pitch: s[0],
             roll: s[1],
@@ -247,8 +225,6 @@ impl FlightGear{
 
 impl Environment for FlightGear {
 	fn new() -> FlightGear {
-		// let s = State {pitch: 0.0, roll: 0.0, heading: 0.0, altitude: 0.0, latitude: 0.0, longitude: 0.0, a: A{x:0.0,y:0.0,z:0.0}, v: V{x:0.0,y:0.0,z:0.0}};
-		// let a = Action {throttle: 0.0, aileron: 0.0, elevator: 0.0, rudder: 0.0, aileron_trim: 0.0, elevator_trim: 0.0, rudder_trim: 0.0};
 
         let my_port = 1337;
         let fg_port = 1338;
@@ -260,11 +236,6 @@ impl Environment for FlightGear {
 		FlightGear{my_address, fg_address, server}
 	}
 
-	// fn set_state(&mut self, state: State) -> bool {
-	// 	self.state = state;
-	// 	true
-	// }
-
 	fn reset(&self) -> EnvResult<State> {
         loop{
             let incoming = self.server.receive();
@@ -274,9 +245,6 @@ impl Environment for FlightGear {
                 _ => return EnvResult::Done,
             }
         }
-        
-		// EnvResult::Some(self.state)
-		// EnvResult::Done
 	}
 
 	fn step(&mut self, action: Action) -> EnvResult<State> {
@@ -291,12 +259,7 @@ impl Environment for FlightGear {
                 _ => return EnvResult::Done,
             }
         }
-		// EnvResult::Some(self.state)	
 	}
-
-	// fn receive(mut self) -> {
-	// 	self.server.receive();
-	// }
 }
 
 
