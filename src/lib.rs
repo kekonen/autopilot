@@ -47,14 +47,14 @@ impl Server{
         Ok(buf_str.to_string())
     }
 
-    pub fn send(&self, to_send: &str, address: SocketAddr) -> std::io::Result<()> {
+    pub fn send(&self, message: &str, address: &SocketAddr) -> std::io::Result<()> {
         {
             // let buf = &mut to_send[..amt];
             // buf.reverse();
             // let addr = SocketAddr::from(([127, 0, 0, 1], *port));
             // println!("addr1: {:?}", addr);
 
-            self.socket.send_to(to_send.as_bytes(), address)?;
+            self.socket.send_to(message.as_bytes(), address)?;
             // println!("r1: {:?}---{:?}", result, to_send.as_bytes());
         }
         Ok(())
@@ -79,7 +79,8 @@ impl Server{
 #[derive(Debug, Copy, Clone)]
 pub enum EnvResult<T>{
 	Done,
-	Some(T)
+	Some(T),
+    Error,
 }
 
 
@@ -118,15 +119,20 @@ pub struct State {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Action{
-	throttle:      f32,
-	aileron:       f32,
-	elevator:      f32,
-	rudder:        f32,
-	aileron_trim:  f32,
-	elevator_trim: f32,
-	rudder_trim:   f32,
+	pub aileron:       f32,
+	pub elevator:      f32,
+	pub rudder:        f32,
+    // throttle:      f32,
+	// aileron_trim:  f32,
+	// elevator_trim: f32,
+	// rudder_trim:   f32,
 }
 
+impl ToString for Action {
+    fn to_string(&self) -> String {
+        format!("{};{};{}\n", self.aileron, self.elevator, self.rudder)
+    }
+}
 
 
 // impl<T> Clone for Action<T> {
@@ -141,7 +147,7 @@ pub trait Environment{
 
     fn reset(&self) -> EnvResult<State>;
 
-	fn step(mut self, action: Action) -> EnvResult<State>;
+	fn step(&mut self, action: Action) -> EnvResult<State>;
 
 }
 
@@ -228,8 +234,18 @@ impl Environment for FlightGear {
 		// EnvResult::Done
 	}
 
-	fn step(mut self, action: Action) -> EnvResult<State> {
-        EnvResult::Done
+	fn step(&mut self, action: Action) -> EnvResult<State> {
+        
+        self.server.send(&action.to_string(), &self.fg_address).unwrap();
+
+        loop{
+            let incoming = self.server.receive();
+
+            match incoming {
+                Ok(message) => return EnvResult::Some(self.decode_state(&message)),
+                _ => return EnvResult::Done,
+            }
+        }
 		// EnvResult::Some(self.state)	
 	}
 
