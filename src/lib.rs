@@ -264,6 +264,38 @@ impl Environment for FlightGear {
 
 
 
-pub trait Agent{
+pub struct Agent<'a, T: Environment>{
+    env: &'a mut T,
+}
 
+impl<'a, T> Agent<'a, T>
+    where T: Environment {
+    pub fn init(env: &'a mut T) -> Self {
+        Agent{env: env}
+    }
+
+    pub fn run(&mut self) {
+        
+        let result = self.env.reset();
+        match result {
+            EnvResult::Some(state) => println!("state: {:?}", state),
+            EnvResult::Done => println!("DONE!"),
+            Error => println!("Error"),
+        }
+
+        let action = Action{aileron: 0.0, elevator: 0.0, rudder: 0.0};
+
+        let result = self.env.step(action);
+
+        loop {
+            let action = Action{aileron: 0.0, elevator: 0.0, rudder: 0.0};
+
+            let result = self.env.step(action);
+            match result {
+                EnvResult::Some(state) => println!("state: {:?}", state),
+                EnvResult::Done => println!("DONE!"),
+                Error => break,
+            }
+        }
+    }
 }
