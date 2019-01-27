@@ -2,6 +2,9 @@ use std::net::UdpSocket;
 use std::str;
 use std::net::{ToSocketAddrs, SocketAddr};
 
+use std::str::FromStr;
+use std::num::ParseFloatError;
+
 // #![feature(rustc_private)]
 // #[macro_use] extern crate log;
 
@@ -112,6 +115,48 @@ pub struct State {
     vry:                f32,
     vrz:                f32
 }
+
+impl FromStr for State {
+    type Err = ParseFloatError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut s: Vec<f32> = s.trim().split(';')
+        .map(|x| x.parse().unwrap())
+        .collect();
+
+        // println!("message:{:?}, s:{:?}", message, s);
+        // debug!("--> message: {m}, split: {s}", m=message, s=split);
+        Ok(State {
+            pitch: s[0],
+            roll: s[1],
+            heading: s[2],
+            turn_rate: s[3],
+            g: s[4],
+            air_speed: s[5],
+            altitude: s[6],
+            vertical_speed: s[7],
+            gps_vertical_speed: s[8],
+            gps_altitude: s[9],
+            gps_latitude: s[10],
+            gps_longitude: s[11],
+            gps_ground_speed: s[12],
+            ax: s[13],
+            ay: s[14],
+            az: s[15],
+            arx: s[16],
+            ary: s[17],
+            arz: s[18],
+            vx: s[19],
+            vy: s[20],
+            vz: s[21],
+            vrx: s[22],
+            vry: s[23],
+            vrz: s[24]
+        })
+
+        // Ok(Point { x: x_fromstr, y: y_fromstr })
+    }
+} 
 
 // impl<T> Clone for State<T> {
 //     fn clone(&self) -> State<T> { *self }
@@ -225,7 +270,7 @@ impl Environment for FlightGear {
             let incoming = self.server.receive();
 
             match incoming {
-                Ok(message) => return EnvResult::Some(self.decode_state(&message)),
+                Ok(message) => return EnvResult::Some(State::from_str(&message).unwrap()),
                 _ => return EnvResult::Done,
             }
         }
