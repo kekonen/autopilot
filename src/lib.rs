@@ -285,8 +285,6 @@ impl<'a, T> Agent<'a, T>
 
         let action = Action{aileron: 0.0, elevator: 0.0, rudder: 0.0};
 
-        let result = self.env.step(action);
-
         loop {
             let action = Action{aileron: 0.0, elevator: 0.0, rudder: 0.0};
 
