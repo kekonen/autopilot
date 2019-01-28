@@ -166,6 +166,12 @@ impl ToString for Action {
     }
 }
 
+impl Action {
+    pub fn new() -> Self {
+        Action {aileron: 0.0, elevator: 0.0, rudder: 0.0}
+    }
+}
+
 
 
 pub trait Environment{
@@ -237,24 +243,29 @@ impl<'a, T> Agent<'a, T>
         Agent{env: env}
     }
 
-    pub fn run(&mut self) {
+    pub fn run<F>(&mut self, f: F) where
+        F: Fn(&State, &mut Action) -> Action{
         
         let result = self.env.reset();
-        match result {
-            EnvResult::Some(state) => println!("state: {:?}", state),
-            EnvResult::Done => println!("DONE!"),
-            EnvResult::Error => println!("Error"),
-        }
+        let mut state = match result {
+            EnvResult::Some(state) => state,
+            _ => return
+            // EnvResult::Done => println!("DONE!"),
+            // EnvResult::Error => println!("Error"),
+        };
+        
+        let mut action = Action::new();
 
         loop {
-            let action = Action{aileron: 0.0, elevator: 0.0, rudder: 0.0};
-
+            action = f(&state, &mut action);
+            // let action = Action{aileron: 0.0, elevator: 0.0, rudder: 0.0};
             let result = self.env.step(action);
-            match result {
-                EnvResult::Some(state) => println!("state: {:?}", state),
-                EnvResult::Done => println!("DONE!"),
+            state = match result {
+                EnvResult::Some(state) => state,
+                EnvResult::Done => break,
                 EnvResult::Error => break,
-            }
+            };
+            
         }
     }
 }
