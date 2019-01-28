@@ -3,8 +3,7 @@
 
 
 mod lib;
-use lib::serve;
-use lib::{Agent, Environment, FlightGear, Server, EnvResult, State, Action};
+use lib::{Agent, Environment, FlightGear};
 
 fn main() {
 	println!("Kek!");

@@ -1,6 +1,6 @@
 use std::net::UdpSocket;
 use std::str;
-use std::net::{ToSocketAddrs, SocketAddr};
+use std::net::{SocketAddr}; // ToSocketAddrs
 
 use std::str::FromStr;
 use std::num::ParseFloatError;
@@ -10,7 +10,7 @@ use std::num::ParseFloatError;
 
 pub fn serve() -> std::io::Result<()> {
     {
-        let mut socket = UdpSocket::bind("127.0.0.1:34254")?;
+        let socket = UdpSocket::bind("127.0.0.1:34254")?;
         //  ncat -v localhost 34254 -u
 
         // Receives a single datagram message on the socket. If `buf` is too small to hold
@@ -35,14 +35,14 @@ pub struct Server{
 
 impl Server{
     pub fn init(address: SocketAddr) -> Server {
-        let mut socket = UdpSocket::bind(address).unwrap();
+        let socket = UdpSocket::bind(address).unwrap();
 
         Server{address: address, socket: socket}
     }
 
     pub fn receive(&self) -> std::io::Result<String> {
         let mut buf = [0; 1024];
-        let (amt, src) = self.socket.recv_from(&mut buf)?;
+        let (amt, _src) = self.socket.recv_from(&mut buf)?;
         // println!("add: {:?}", src);
 
         let buf = &mut buf[..amt];
@@ -114,7 +114,7 @@ impl FromStr for State {
     type Err = ParseFloatError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut s: Vec<f32> = s.trim().split(';')
+        let s: Vec<f32> = s.trim().split(';')
         .map(|x| x.parse().unwrap())
         .collect();
 
@@ -186,43 +186,6 @@ pub struct FlightGear{
     server: Server,
 }
 
-impl FlightGear{
-    fn decode_state(&self, message: &str) -> State {
-        let mut s: Vec<f32> = message.trim().split(';')
-        .map(|x| x.parse().unwrap())
-        .collect();
-
-        State {
-            pitch: s[0],
-            roll: s[1],
-            heading: s[2],
-            turn_rate: s[3],
-            g: s[4],
-            air_speed: s[5],
-            altitude: s[6],
-            vertical_speed: s[7],
-            gps_vertical_speed: s[8],
-            gps_altitude: s[9],
-            gps_latitude: s[10],
-            gps_longitude: s[11],
-            gps_ground_speed: s[12],
-            ax: s[13],
-            ay: s[14],
-            az: s[15],
-            arx: s[16],
-            ary: s[17],
-            arz: s[18],
-            vx: s[19],
-            vy: s[20],
-            vz: s[21],
-            vrx: s[22],
-            vry: s[23],
-            vrz: s[24]
-        }
-        // pitch, roll, heading, turn_rate, g, air_speed, altitude, vertical_speed, gps_vertical_speed, gps_altitude, gps_latitude, gps_longitude, gps_ground_speed, x, x_rot, y, y_rot
-    }
-}
-
 impl Environment for FlightGear {
 	fn new() -> FlightGear {
 
@@ -255,7 +218,7 @@ impl Environment for FlightGear {
             let incoming = self.server.receive();
 
             match incoming {
-                Ok(message) => return EnvResult::Some(self.decode_state(&message)),
+                Ok(message) => return EnvResult::Some(State::from_str(&message).unwrap()),
                 _ => return EnvResult::Done,
             }
         }
@@ -280,10 +243,8 @@ impl<'a, T> Agent<'a, T>
         match result {
             EnvResult::Some(state) => println!("state: {:?}", state),
             EnvResult::Done => println!("DONE!"),
-            Error => println!("Error"),
+            EnvResult::Error => println!("Error"),
         }
-
-        let action = Action{aileron: 0.0, elevator: 0.0, rudder: 0.0};
 
         loop {
             let action = Action{aileron: 0.0, elevator: 0.0, rudder: 0.0};
@@ -292,7 +253,7 @@ impl<'a, T> Agent<'a, T>
             match result {
                 EnvResult::Some(state) => println!("state: {:?}", state),
                 EnvResult::Done => println!("DONE!"),
-                Error => break,
+                EnvResult::Error => break,
             }
         }
     }
