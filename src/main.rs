@@ -30,7 +30,11 @@ fn main() {
 
 	let mut a = Agent::init(&mut e);
 
-	a.run();
+	a.run(|state, action| {
+		let mut action = *action;
+		action.aileron +=0.01;
+		action
+	});
 
 
 }
