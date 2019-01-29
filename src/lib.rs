@@ -252,8 +252,8 @@ impl<'a, T> Agent<'a, T>
         Agent{env: env}
     }
 
-    pub fn run<F>(&mut self, f: F) where
-        F: Fn(&State, &mut PossibleAction<Action>) -> PossibleAction<Action>{
+    pub fn run<F>(&mut self, mut f: F) where
+        F: FnMut(&State, &mut PossibleAction<Action>) -> PossibleAction<Action>{
         
         let result = self.env.reset();
         let mut state = match result {
