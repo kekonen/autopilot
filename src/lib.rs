@@ -148,6 +148,11 @@ impl FromStr for State {
     }
 } 
 
+#[derive(Debug, Copy, Clone)]
+pub enum PossibleAction<Action>{
+	Some(Action),
+    None,
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct Action{
@@ -179,7 +184,7 @@ pub trait Environment{
 	
     fn reset(&self) -> EnvResult<State>;
 
-	fn step(&mut self, action: Action) -> EnvResult<State>;
+	fn step(&mut self, paction: PossibleAction<Action>) -> EnvResult<State>;
 
 }
 
@@ -216,9 +221,13 @@ impl Environment for FlightGear {
         }
 	}
 
-	fn step(&mut self, action: Action) -> EnvResult<State> {
+	fn step(&mut self, paction: PossibleAction<Action>) -> EnvResult<State> {
         
-        self.server.send(&action.to_string(), &self.fg_address).unwrap();
+        match paction {
+            PossibleAction::Some(action) => self.server.send(&action.to_string(), &self.fg_address).unwrap(),
+            PossibleAction::None => (),
+        }
+        
 
         loop{
             let incoming = self.server.receive();
@@ -244,7 +253,7 @@ impl<'a, T> Agent<'a, T>
     }
 
     pub fn run<F>(&mut self, f: F) where
-        F: Fn(&State, &mut Action) -> Action{
+        F: Fn(&State, &mut PossibleAction<Action>) -> PossibleAction<Action>{
         
         let result = self.env.reset();
         let mut state = match result {
@@ -254,12 +263,18 @@ impl<'a, T> Agent<'a, T>
             // EnvResult::Error => println!("Error"),
         };
         
-        let mut action = Action::new();
+        let mut paction = PossibleAction::Some(Action::new());
 
         loop {
-            action = f(&state, &mut action);
+            paction = f(&state, &mut paction);
+
+            // let action = match paction {
+            //     PossibleAction::Some(action) => action,
+            //     PossibleAction::None => _,
+            // }
+
             // let action = Action{aileron: 0.0, elevator: 0.0, rudder: 0.0};
-            let result = self.env.step(action);
+            let result = self.env.step(paction);
             state = match result {
                 EnvResult::Some(state) => state,
                 EnvResult::Done => break,
