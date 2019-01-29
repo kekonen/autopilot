@@ -19,8 +19,15 @@ fn main() {
 	let mut roll_pid = PIDController::new(0.003, 0.002, 0.003);
 	// let mut roll_pid = PIDController::new(0.003, 0.003, 0.004);
 	// let mut roll_pid = PIDController::new(0.01, 0.003, 0.004);
+    roll_pid.set_target(0.0);
 
-    roll_pid.set_target(15.0);
+	let mut pitch_pid = PIDController::new(-0.003, -0.0007, -0.01);
+	// let mut pitch_pid = PIDController::new(-0.003, -0.001, -0.008);
+	// let mut pitch_pid = PIDController::new(-0.003, -0.0017, -0.01);
+	// let mut pitch_pid = PIDController::new(-0.0003, -0.0001, -0.01);
+	// let mut pitch_pid = PIDController::new(-0.0003, -0.001, -0.01);
+    pitch_pid.set_target(0.0);
+
 
 
 	a.run(|state, paction| {
@@ -28,9 +35,13 @@ fn main() {
 		let paction = match paction {
 			PossibleAction::Some(mut action) => {
 				// println!("action : {:?}", action);
-				let control_input = roll_pid.update(state.roll as f64, 0.1) as f32;
-				println!("c: {}", control_input);
-				action.aileron += control_input;
+				let roll_input = roll_pid.update(state.roll as f64, 0.1) as f32;
+				println!("c: {}", roll_input);
+				action.aileron += roll_input;
+
+				let pitch_input = pitch_pid.update(state.pitch as f64, 0.1) as f32;
+				println!("c: {}", pitch_input);
+				action.elevator += pitch_input;
 
 				PossibleAction::Some(action)
 			},
