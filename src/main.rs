@@ -21,17 +21,13 @@ fn main() {
 	let mut a = Agent::init(&mut e);
 
 	let mut roll_pid = PIDController::new(0.08, 0.01, 0.003);
-	// let mut roll_pid = PIDController::new(0.003, 0.003, 0.004);
-	// let mut roll_pid = PIDController::new(0.01, 0.003, 0.004);
+	
 	let desired_roll_angle = 0.0;
 	roll_pid.set_limits(-1.0,1.0);
     roll_pid.set_target(desired_roll_angle);
 
 	let mut pitch_pid = PIDController::new(-0.01, -0.001, 0.01);
-	// let mut pitch_pid = PIDController::new(-0.003, -0.001, -0.008);
-	// let mut pitch_pid = PIDController::new(-0.003, -0.0017, -0.01);
-	// let mut pitch_pid = PIDController::new(-0.0003, -0.0001, -0.01);
-	// let mut pitch_pid = PIDController::new(-0.0003, -0.001, -0.01);
+	
 	pitch_pid.set_limits(-1.0,1.0);
     pitch_pid.set_target(0.0);
 
@@ -40,9 +36,7 @@ fn main() {
     heading_pid.set_target(0.0);
 
 	let mut bank_turn_pid = PIDController::new(-0.3, -0.00, -0.0);
-	// let mut bank_turn_pid = PIDController::new(-0.1, -0.06, -0.005); //better
-	// let mut bank_turn_pid = PIDController::new(-0.08, -0.07, -0.09);  //strange but close
-	// let mut bank_turn_pid = PIDController::new(-0.003, 0.0001, 0.0001); // but after reaching end goes bad
+	
 	bank_turn_pid.set_limits(-45.0,45.0);
 	bank_turn_pid.set_target(0.0);
 
@@ -66,12 +60,6 @@ fn main() {
 					roll_pid.set_target(0.0);
 				}
 
-				
-
-				// let turn_input = bank_turn_pid.update(dest_delta_heading as f64, 0.1) as f32;
-				// roll_pid.set_target(turn_input as f64);
-				
-				// println!("action : {:?}", action);
 				let roll_input = roll_pid.update(state.roll as f64, 0.1) as f32;
 				// println!("ri: {}, ra: {}", roll_input, state.roll);
 				action.aileron = roll_input;
