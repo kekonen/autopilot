@@ -35,7 +35,9 @@ fn main() {
 	pitch_pid.set_limits(-1.0,1.0);
     pitch_pid.set_target(0.0);
 
-	// let mut heading_pid = PIDController::new(-0.01, -0.001, 0.01);
+	let mut heading_pid = PIDController::new(-0.06, -0.03, 0.04);
+	heading_pid.set_limits(-1.0,1.0);
+    heading_pid.set_target(0.0);
 
 	let mut bank_turn_pid = PIDController::new(-0.3, -0.00, -0.0);
 	// let mut bank_turn_pid = PIDController::new(-0.1, -0.06, -0.005); //better
@@ -51,14 +53,23 @@ fn main() {
 			PossibleAction::Some(mut action) => {
 				let dest_delta_heading = n.get_delta_heading_to_destination(state.gps_latitude, state.gps_longitude, state.heading);
 
-				// if dest_delta_heading > 4.0 {
-				// 	let turn_input = bank_turn_pid.update(dest_delta_heading as f64, 0.1) as f32;
-				// 	roll_pid.set_target(turn_input as f64);
-				// } else {
+				let some_input_for_logging;
+				if dest_delta_heading > 4.0 {
+					let turn_input = bank_turn_pid.update(dest_delta_heading as f64, 0.1) as f32;
+					roll_pid.set_target(turn_input as f64);
+					some_input_for_logging = turn_input;
+					action.rudder = 0.0;
+				} else {
+					let yaw_input = heading_pid.update(dest_delta_heading as f64, 0.1) as f32;
+					action.rudder = yaw_input;
+					some_input_for_logging = yaw_input;
+					roll_pid.set_target(0.0);
+				}
 
-				// }
-				let turn_input = bank_turn_pid.update(dest_delta_heading as f64, 0.1) as f32;
-				roll_pid.set_target(turn_input as f64);
+				
+
+				// let turn_input = bank_turn_pid.update(dest_delta_heading as f64, 0.1) as f32;
+				// roll_pid.set_target(turn_input as f64);
 				
 				// println!("action : {:?}", action);
 				let roll_input = roll_pid.update(state.roll as f64, 0.1) as f32;
@@ -69,7 +80,7 @@ fn main() {
 				// println!("pi: {}, pa: {}", pitch_input, state.pitch);
 				action.elevator = pitch_input;
 
-				println!("ti: {}, dra: {}, dh: {}, ri: {}, pi: {}", format!("{:.*}", 4, turn_input), format!("{:.*}", 2, desired_roll_angle), format!("{:.*}", 2, dest_delta_heading), format!("{:.*}", 4, roll_input), format!("{:.*}", 4, pitch_input));
+				println!("ti: {}, dra: {}, dh: {}, ri: {}, pi: {}", format!("{:.*}", 4, some_input_for_logging), format!("{:.*}", 2, desired_roll_angle), format!("{:.*}", 2, dest_delta_heading), format!("{:.*}", 4, roll_input), format!("{:.*}", 4, pitch_input));
 
 				PossibleAction::Some(action)
 				// PossibleAction::None
