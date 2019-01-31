@@ -23,7 +23,7 @@ fn main() {
 	let mut roll_pid = PIDController::new(0.08, 0.01, 0.003);
 	// let mut roll_pid = PIDController::new(0.003, 0.003, 0.004);
 	// let mut roll_pid = PIDController::new(0.01, 0.003, 0.004);
-	let mut desired_roll_angle = 0.0;
+	let desired_roll_angle = 0.0;
 	roll_pid.set_limits(-1.0,1.0);
     roll_pid.set_target(desired_roll_angle);
 
