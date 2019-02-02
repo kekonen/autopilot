@@ -36,12 +36,12 @@ impl Navigation{
         Navigation { dest_location: Location::new(0.0, 0.0)}
     }
 
-    pub fn get_delta_heading_to_destination(&mut self, new_latitude: f32, new_longitude: f32, heading: f32) -> f32 {
+    pub fn get_delta_heading_to_destination(&mut self, current_location: Location, heading: f32) -> f32 {
         // delta_lat = self.dest_latitude - gps_latitude
-        let delta_latitude = self.dest_location.latitude - new_latitude;
+        let delta_latitude = self.dest_location.latitude - current_location.latitude;
 
 		// delta_long = self.dest_longitude - gps_longitude 
-        let delta_longitude = self.dest_location.longitude - new_longitude;
+        let delta_longitude = self.dest_location.longitude - current_location.longitude;
 
 		// rad = math.atan2(delta_lat, delta_long)
 

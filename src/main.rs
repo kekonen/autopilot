@@ -46,7 +46,7 @@ fn main() {
 		let paction = *paction;
 		let paction = match paction {
 			PossibleAction::Some(mut action) => {
-				let dest_delta_heading = n.get_delta_heading_to_destination(state.gps_latitude, state.gps_longitude, state.heading);
+				let dest_delta_heading = n.get_delta_heading_to_destination(Location::new(state.gps_latitude, state.gps_longitude), state.heading);
 
 				let some_input_for_logging;
 				if dest_delta_heading > 4.0 || dest_delta_heading < -4.0 {
@@ -69,7 +69,7 @@ fn main() {
 				// println!("pi: {}, pa: {}", pitch_input, state.pitch);
 				action.elevator = pitch_input;
 
-				println!("ti: {}, dra: {}, dh: {}, ri: {}, pi: {}", format!("{:.*}", 4, some_input_for_logging), format!("{:.*}", 2, desired_roll_angle), format!("{:.*}", 2, dest_delta_heading), format!("{:.*}", 4, roll_input), format!("{:.*}", 4, pitch_input));
+				println!("ti: {}, dra: {}, dh: {}, ri: {}, pi: {}, dest: {}", format!("{:.*}", 4, some_input_for_logging), format!("{:.*}", 2, desired_roll_angle), format!("{:.*}", 2, dest_delta_heading), format!("{:.*}", 4, roll_input), format!("{:.*}", 4, pitch_input), format!("{:.*}", 4, pitch_input));
 
 				PossibleAction::Some(action)
 				// PossibleAction::None
