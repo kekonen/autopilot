@@ -48,7 +48,7 @@ fn main() {
 				let dest_delta_heading = n.get_delta_heading_to_destination(state.gps_latitude, state.gps_longitude, state.heading);
 
 				let some_input_for_logging;
-				if dest_delta_heading > 4.0 {
+				if dest_delta_heading > 4.0 || dest_delta_heading < -4.0 {
 					let turn_input = bank_turn_pid.update(dest_delta_heading as f64, 0.1) as f32;
 					roll_pid.set_target(turn_input as f64);
 					some_input_for_logging = turn_input;
