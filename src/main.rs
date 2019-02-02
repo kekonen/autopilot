@@ -5,7 +5,7 @@ use pid_control::PIDController;
 use pid_control::Controller;
 
 mod navigation;
-use navigation::{Navigation};
+use navigation::{Navigation, Location};
 
 mod lib;
 use lib::{Agent, Environment, FlightGear, PossibleAction};
@@ -14,7 +14,8 @@ use lib::{Agent, Environment, FlightGear, PossibleAction};
 fn main() {
 	println!("Kek!");
 
-	let mut n = Navigation::new( 19.754154, -156.044102 ); // home: 21.32525 , -157.94319     close airport: 21.35437 , -157.71158      next island airport: 19.754154, -156.044102
+	let mut n = Navigation::new( ); 
+	n.set_dest_location(Location::new(19.754154, -156.044102)); // home: 21.32525 , -157.94319     close airport: 21.35437 , -157.71158      next island airport: 19.754154, -156.044102
 
 	let mut e = FlightGear::new();
 
