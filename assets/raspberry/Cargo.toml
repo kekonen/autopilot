@@ -1,0 +1,9 @@
+[package]
+name = "rpi_test"
+version = "0.1.0"
+authors = ["Daniil Naumetc <daniil.naumetc@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+rppal = "0.10.0"
+
