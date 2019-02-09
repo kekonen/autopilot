@@ -21,6 +21,8 @@
 // i2c_ds3231.rs - Sets and retrieves the time on a Maxim Integrated DS3231
 // RTC using I2C.
 
+extern crate bincode;
+
 use std::error::Error;
 use std::thread;
 use std::time::Duration;
@@ -54,43 +56,73 @@ fn main() -> Result<(), Box<dyn Error>> {
     // write 3 bytes, overwriting the Seconds, Minutes and Hours registers.
     // Setting bit 6 of the Hours register indicates we're using a 12-hour
     // format. Leaving bit 5 unset indicates AM.
-    i2c.block_write(
-        REG_SECONDS as u8,
-        &[dec2bcd(50), dec2bcd(59), dec2bcd(11) | (1 << 6)],
-    )?;
+    // i2c.block_write(
+    //     REG_SECONDS as u8,
+    //     &[dec2bcd(50), dec2bcd(59), dec2bcd(11) | (1 << 6)],
+    // )?;
 
     let mut reg = [0u8; 3];
+
+    let mut i = 0;
     loop {
+
+        let data: [f32; 3] = [-0.228, 0.854, 0.999];
+        let serialized = bincode::serialize(&data)
+                        .expect("couldn't serialize data");
+        
+        for x in 0..3 {
+            println!("Sending => {:?}", &serialized[(x*4)..(x*4+4)]);
+            i2c.block_write(
+                REG_SECONDS as u8,
+                &serialized[(x*4)..(x*4+4)],
+                // &[dec2bcd(i), dec2bcd(i+1), dec2bcd(i+2) | (1 << 6)],
+            )?;
+            thread::sleep(Duration::from_millis(10));
+        }
+        println!("End transaction");
+
+        // i2c.block_write(
+        //     REG_SECONDS as u8,
+        //     &[i, i+1, i+2],
+        //     // &[dec2bcd(i), dec2bcd(i+1), dec2bcd(i+2) | (1 << 6)],
+        // )?;
+
+        // i += 1;
+
+        // if i>50 {
+        //     i = 0;
+        // }
         // Start at register address 0x00 (Seconds) and read the values of the
         // next 3 registers (Seconds, Minutes, Hours) into the reg variable.
-        i2c.block_read(REG_SECONDS as u8, &mut reg)?;
+        // i2c.block_read(REG_SECONDS as u8, &mut reg)?;
 
         // Display the retrieved time in the appropriate format based on bit 6 of
         // the Hours register.
-        if reg[REG_HOURS] & (1 << 6) > 0 {
-            // 12-hour format.
-            println!(
-                "{:0>2}:{:0>2}:{:0>2} {}",
-                bcd2dec(reg[REG_HOURS] & 0x1F),
-                bcd2dec(reg[REG_MINUTES]),
-                bcd2dec(reg[REG_SECONDS]),
-                if reg[REG_HOURS] & (1 << 5) > 0 {
-                    "PM"
-                } else {
-                    "AM"
-                }
-            );
-        } else {
-            // 24-hour format.
-            println!(
-                "{:0>2}:{:0>2}:{:0>2}",
-                bcd2dec(reg[REG_HOURS] & 0x3F),
-                bcd2dec(reg[REG_MINUTES]),
-                bcd2dec(reg[REG_SECONDS])
-            );
-        }
+        // if reg[REG_HOURS] & (1 << 6) > 0 {
+        //     // 12-hour format.
+        //     println!(
+        //         "{:0>2}:{:0>2}:{:0>2} {}",
+        //         bcd2dec(reg[REG_HOURS] & 0x1F),
+        //         bcd2dec(reg[REG_MINUTES]),
+        //         bcd2dec(reg[REG_SECONDS]),
+        //         if reg[REG_HOURS] & (1 << 5) > 0 {
+        //             "PM"
+        //         } else {
+        //             "AM"
+        //         }
+        //     );
+        // } else {
+        //     // 24-hour format.
+        //     println!(
+        //         "{:0>2}:{:0>2}:{:0>2}",
+        //         bcd2dec(reg[REG_HOURS] & 0x3F),
+        //         bcd2dec(reg[REG_MINUTES]),
+        //         bcd2dec(reg[REG_SECONDS])
+        //     );
+        // }
 
-        thread::sleep(Duration::from_secs(1));
+        thread::sleep(Duration::from_millis(100));
     }
 }
+
 
