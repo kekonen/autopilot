@@ -5,7 +5,7 @@ use pid_control::PIDController;
 use pid_control::Controller;
 
 mod navigation;
-use navigation::{Navigation};
+use navigation::{Navigation, Location};
 
 mod lib;
 use lib::{Agent, Environment, FlightGear, PossibleAction};
@@ -14,7 +14,8 @@ use lib::{Agent, Environment, FlightGear, PossibleAction};
 fn main() {
 	println!("Kek!");
 
-	let mut n = Navigation::new( 19.754154, -156.044102 ); // home: 21.32525 , -157.94319     close airport: 21.35437 , -157.71158      next island airport: 19.754154, -156.044102
+	let mut n = Navigation::new( ); 
+	n.set_dest_location(Location::new(21.35437 , -157.71158)); // home: 21.32525 , -157.94319     close airport: 21.35437 , -157.71158      next island airport: 19.754154, -156.044102
 
 	let mut e = FlightGear::new();
 
@@ -45,7 +46,13 @@ fn main() {
 		let paction = *paction;
 		let paction = match paction {
 			PossibleAction::Some(mut action) => {
-				let dest_delta_heading = n.get_delta_heading_to_destination(state.gps_latitude, state.gps_longitude, state.heading);
+				let current_location = Location::new(state.gps_latitude, state.gps_longitude);
+
+				// if (n.get_dest_location().distance_to(&current_location) < 1.0) {
+					
+				// }
+
+				let dest_delta_heading = n.get_delta_heading_to_destination(&current_location, state.heading);
 
 				let some_input_for_logging;
 				if dest_delta_heading > 4.0 || dest_delta_heading < -4.0 {
@@ -68,7 +75,7 @@ fn main() {
 				// println!("pi: {}, pa: {}", pitch_input, state.pitch);
 				action.elevator = pitch_input;
 
-				println!("ti: {}, dra: {}, dh: {}, ri: {}, pi: {}", format!("{:.*}", 4, some_input_for_logging), format!("{:.*}", 2, desired_roll_angle), format!("{:.*}", 2, dest_delta_heading), format!("{:.*}", 4, roll_input), format!("{:.*}", 4, pitch_input));
+				println!("ti: {}, dra: {}, dh: {}, ri: {}, pi: {}, dest: {}", format!("{:.*}", 4, some_input_for_logging), format!("{:.*}", 2, desired_roll_angle), format!("{:.*}", 2, dest_delta_heading), format!("{:.*}", 4, roll_input), format!("{:.*}", 4, pitch_input), format!("{:.*}", 4, n.get_dest_location().distance_to(&current_location)));
 
 				PossibleAction::Some(action)
 				// PossibleAction::None
